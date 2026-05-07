@@ -540,22 +540,22 @@ footer {
     </div>
   </footer>
 </div>
-
+  <script src="gnoke-persist.js"></script>
 <script>
 (function () {
   "use strict";
 
-  /* ── bundle check ── */
-  const bundleOk = !!(window.__GNOKE_READY__);
-  const chipEl = document.getElementById('bundle-chip');
-  if (bundleOk) {
-    chipEl.textContent = 'bundle: loaded ✓';
-    chipEl.style.cssText = 'color:var(--green);background:var(--green-bg);border-color:rgba(26,122,74,0.2)';
-  } else {
-    chipEl.textContent = 'bundle: not found';
-    chipEl.style.cssText = 'color:var(--amber)';
-    document.getElementById('load-error').classList.add('show');
-  }
+/* ── bundle check ── */
+const bundleOk = !!(window.GNOKE_READY);
+const chipEl = document.getElementById('bundle-chip');
+if (bundleOk) {
+  chipEl.textContent = 'bundle: loaded ✓';
+  chipEl.style.cssText = 'color:var(--green);background:var(--green-bg);border-color:rgba(26,122,74,0.2)';
+} else {
+  chipEl.textContent = 'bundle: not found';
+  chipEl.style.cssText = 'color:var(--amber)';
+  document.getElementById('load-error').classList.add('show');
+}
 
   /* ── native openDB adapter (no idb required for demo) ── */
   function openDB(name, version, { upgrade } = {}) {
