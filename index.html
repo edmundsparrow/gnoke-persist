@@ -1,0 +1,900 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>gnoke-persist — Demo</title>
+
+<!-- The actual bundle. Place gnoke-persist.js in the same folder. -->
+<script src="gnoke-persist.js"></script>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@300;400;500&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet">
+
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --page:      #f5f3ee;
+  --white:     #ffffff;
+  --surface:   #faf9f6;
+  --border:    #e4e1d9;
+  --border2:   #ccc9bf;
+  --text:      #1a1917;
+  --muted:     #8a8780;
+  --faint:     #b8b5ae;
+  --accent:    #2d5be3;
+  --accent-bg: #eef2fd;
+  --green:     #1a7a4a;
+  --green-bg:  #edf7f2;
+  --amber:     #b45309;
+  --amber-bg:  #fef3e2;
+  --red:       #c0392b;
+  --red-bg:    #fdf2f1;
+  --mono:      'JetBrains Mono', monospace;
+  --sans:      'Outfit', sans-serif;
+  --serif:     'Instrument Serif', serif;
+  --radius:    10px;
+  --shadow:    0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+}
+
+html { scroll-behavior: smooth; }
+body {
+  background: var(--page);
+  color: var(--text);
+  font-family: var(--sans);
+  font-size: 14px;
+  line-height: 1.6;
+  min-height: 100vh;
+}
+
+.app { max-width: 980px; margin: 0 auto; padding: 0 24px 80px; }
+
+/* ── Topbar ── */
+.topbar {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 20px 0 18px;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 40px;
+}
+.topbar-left { display: flex; align-items: center; gap: 12px; }
+.logo { font-family: var(--mono); font-size: 13px; font-weight: 500; color: var(--text); }
+.logo span { color: var(--accent); }
+.version-pill {
+  font-family: var(--mono); font-size: 10px;
+  padding: 2px 7px; border-radius: 20px;
+  background: var(--accent-bg); color: var(--accent);
+  border: 1px solid rgba(45,91,227,0.15); letter-spacing: 0.04em;
+}
+.topbar-right { display: flex; gap: 6px; align-items: center; }
+.chip {
+  font-family: var(--mono); font-size: 10px;
+  padding: 3px 8px; border-radius: 4px;
+  background: var(--white); border: 1px solid var(--border); color: var(--muted);
+  transition: all 0.2s;
+}
+
+/* ── Hero ── */
+.hero { padding: 40px 0 44px; }
+.hero-eyebrow {
+  font-family: var(--mono); font-size: 11px;
+  letter-spacing: 0.12em; text-transform: uppercase;
+  color: var(--accent); margin-bottom: 14px;
+}
+.hero h1 {
+  font-family: var(--serif); font-size: clamp(32px, 5vw, 52px);
+  font-weight: 400; line-height: 1.1; color: var(--text);
+  margin-bottom: 14px; letter-spacing: -0.01em;
+}
+.hero h1 em { font-style: italic; color: var(--accent); }
+.hero-sub {
+  font-size: 15px; color: var(--muted);
+  max-width: 560px; line-height: 1.65; margin-bottom: 28px;
+}
+.hero-tags { display: flex; flex-wrap: wrap; gap: 8px; }
+.tag {
+  font-family: var(--mono); font-size: 11px;
+  padding: 4px 10px; border-radius: 5px;
+  background: var(--white); border: 1px solid var(--border); color: var(--muted);
+}
+
+/* ── Banners ── */
+.banner {
+  display: flex; align-items: flex-start; gap: 10px;
+  padding: 12px 16px; border-radius: var(--radius);
+  font-family: var(--mono); font-size: 12px; margin-bottom: 20px;
+}
+.banner-amber {
+  background: var(--amber-bg); border: 1px solid rgba(180,83,9,0.18); color: var(--amber);
+}
+.banner-red {
+  display: none; background: var(--red-bg);
+  border: 1px solid rgba(192,57,43,0.2); color: var(--red);
+}
+.banner-red.show { display: flex; }
+
+/* ── Section ── */
+.demo-section { margin-bottom: 48px; }
+.section-head { display: flex; align-items: baseline; gap: 12px; margin-bottom: 10px; }
+.section-num { font-family: var(--mono); font-size: 11px; color: var(--faint); letter-spacing: 0.08em; }
+.section-title { font-family: var(--sans); font-size: 17px; font-weight: 600; color: var(--text); }
+.section-desc { font-size: 13px; color: var(--muted); margin-bottom: 20px; max-width: 600px; line-height: 1.65; }
+.section-desc code { font-family: var(--mono); font-size: 12px; background: var(--white); padding: 1px 5px; border-radius: 3px; border: 1px solid var(--border); }
+
+/* ── Card grid ── */
+.card-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+@media (max-width: 680px) { .card-grid { grid-template-columns: 1fr; } }
+
+/* ── Cards ── */
+.card, .card-full {
+  background: var(--white); border: 1px solid var(--border);
+  border-radius: var(--radius); box-shadow: var(--shadow); overflow: hidden;
+}
+.card-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 11px 16px; border-bottom: 1px solid var(--border); background: var(--surface);
+}
+.card-label { font-family: var(--mono); font-size: 11px; color: var(--muted); letter-spacing: 0.06em; }
+.card-body { padding: 16px; }
+
+/* ── Status badge ── */
+.status-badge {
+  display: inline-flex; align-items: center; gap: 5px;
+  font-family: var(--mono); font-size: 10px;
+  padding: 3px 9px; border-radius: 20px;
+  border: 1px solid var(--border); background: var(--white); color: var(--muted);
+  transition: all 0.25s;
+}
+.status-badge.ok     { background: var(--green-bg); border-color: rgba(26,122,74,0.25); color: var(--green); }
+.status-badge.warn   { background: var(--amber-bg); border-color: rgba(180,83,9,0.25);  color: var(--amber); }
+.status-badge.err    { background: var(--red-bg);   border-color: rgba(192,57,43,0.25); color: var(--red);   }
+.status-badge.active { background: var(--accent-bg);border-color: rgba(45,91,227,0.25); color: var(--accent);}
+.dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; flex-shrink: 0; }
+.dot.pulse { animation: pulse 1.8s ease infinite; }
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
+
+/* ── Form fields ── */
+.field { margin-bottom: 12px; }
+.field label {
+  display: block; font-size: 11px; font-weight: 500; color: var(--muted);
+  margin-bottom: 5px; letter-spacing: 0.04em; text-transform: uppercase;
+}
+.field input, .field textarea {
+  width: 100%; background: var(--surface);
+  border: 1px solid var(--border); border-radius: 6px;
+  padding: 8px 11px; font-family: var(--mono); font-size: 12px; color: var(--text);
+  outline: none; transition: border-color 0.15s, box-shadow 0.15s; resize: vertical;
+}
+.field input:focus, .field textarea:focus {
+  border-color: var(--accent); box-shadow: 0 0 0 3px rgba(45,91,227,0.08);
+}
+.field .hint { font-family: var(--mono); font-size: 10px; color: var(--faint); margin-top: 4px; }
+
+/* ── Buttons ── */
+.btn-row { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 14px; }
+.btn {
+  font-family: var(--mono); font-size: 11px; font-weight: 500;
+  letter-spacing: 0.04em; padding: 7px 14px; border-radius: 6px;
+  border: 1px solid var(--border); background: var(--white); color: var(--text);
+  cursor: pointer; transition: all 0.12s;
+  display: inline-flex; align-items: center; gap: 5px; white-space: nowrap;
+}
+.btn:hover:not(:disabled)  { background: var(--surface); border-color: var(--border2); }
+.btn:active:not(:disabled) { transform: scale(0.98); }
+.btn:disabled              { opacity: 0.38; cursor: not-allowed; }
+.btn-primary   { background: var(--accent); border-color: var(--accent); color: #fff; }
+.btn-primary:hover:not(:disabled) { background: #1e4acc; border-color: #1e4acc; }
+.btn-danger    { color: var(--red); border-color: rgba(192,57,43,0.25); }
+.btn-danger:hover:not(:disabled)  { background: var(--red-bg); }
+.btn-ghost     { border-color: transparent; background: transparent; color: var(--muted); }
+.btn-ghost:hover:not(:disabled)   { background: var(--surface); border-color: var(--border); }
+
+/* ── Log ── */
+.log {
+  margin-top: 14px; background: var(--page);
+  border: 1px solid var(--border); border-radius: 6px;
+  padding: 10px 12px; font-family: var(--mono); font-size: 11px;
+  max-height: 150px; overflow-y: auto;
+}
+.log-empty { color: var(--faint); font-style: italic; }
+.log-entry { display: flex; gap: 10px; padding: 2px 0; }
+.log-ts  { color: var(--faint); flex-shrink: 0; }
+.log-msg { color: var(--text); }
+.log-entry.ok   .log-msg { color: var(--green); }
+.log-entry.warn .log-msg { color: var(--amber); }
+.log-entry.err  .log-msg { color: var(--red);   }
+.log-entry.info .log-msg { color: var(--accent); }
+
+/* ── Inspect grid ── */
+.inspect-grid {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+  gap: 8px; margin-bottom: 14px;
+}
+.inspect-cell {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 6px; padding: 9px 11px;
+}
+.inspect-key { font-family: var(--mono); font-size: 10px; color: var(--muted); margin-bottom: 3px; }
+.inspect-val { font-family: var(--mono); font-size: 13px; font-weight: 500; color: var(--text); word-break: break-all; }
+.inspect-val.t { color: var(--green); }
+.inspect-val.f { color: var(--red); }
+.inspect-val.w { color: var(--amber); }
+
+/* ── Code block ── */
+.code-card {
+  background: var(--white); border: 1px solid var(--border);
+  border-radius: var(--radius); box-shadow: var(--shadow); overflow: hidden; margin-bottom: 48px;
+}
+.code-header {
+  display: flex; align-items: center; gap: 6px;
+  padding: 10px 16px; background: var(--surface); border-bottom: 1px solid var(--border);
+}
+.code-dot { width: 10px; height: 10px; border-radius: 50%; }
+.code-dot:nth-child(1) { background: #fc6058; }
+.code-dot:nth-child(2) { background: #fec02f; }
+.code-dot:nth-child(3) { background: #2aca44; }
+.code-filename { font-family: var(--mono); font-size: 11px; color: var(--muted); margin-left: 6px; }
+.code-body {
+  padding: 18px 20px; font-family: var(--mono); font-size: 12px;
+  line-height: 1.85; overflow-x: auto; tab-size: 2;
+}
+.kw { color: #7c3aed; } .fn { color: #0369a1; }
+.str { color: #b45309; } .cm { color: var(--faint); font-style: italic; }
+
+/* ── Architecture ── */
+.arch { display: flex; flex-direction: column; gap: 0; margin-bottom: 28px; }
+.arch-row { display: flex; align-items: stretch; }
+.arch-label {
+  width: 120px; flex-shrink: 0; font-family: var(--mono); font-size: 10px;
+  color: var(--faint); text-align: right; padding-right: 14px; padding-top: 14px;
+  letter-spacing: 0.06em; text-transform: uppercase;
+}
+.arch-box {
+  flex: 1; border: 1px solid var(--border); border-radius: 7px;
+  padding: 12px 16px; background: var(--white); box-shadow: var(--shadow);
+}
+.arch-box-name { font-family: var(--mono); font-size: 12px; font-weight: 500; color: var(--text); margin-bottom: 3px; }
+.arch-box-desc { font-size: 11px; color: var(--muted); font-family: var(--mono); }
+.arch-box.layer-bridge { border-left: 3px solid var(--accent); }
+.arch-box.layer-spirit { border-left: 3px solid #7c3aed; }
+.arch-box.layer-native { border-left: 3px solid var(--green); }
+.arch-connector { display: flex; padding-left: 134px; align-items: center; height: 26px; }
+.arch-connector-label { font-family: var(--mono); font-size: 10px; color: var(--faint); margin-left: 10px; }
+
+/* ── Footer ── */
+footer {
+  border-top: 1px solid var(--border); padding: 28px 0;
+  display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;
+}
+.footer-left { font-family: var(--mono); font-size: 11px; color: var(--muted); }
+.footer-links { display: flex; gap: 16px; }
+.footer-links a { font-family: var(--mono); font-size: 11px; color: var(--accent); text-decoration: none; }
+.footer-links a:hover { text-decoration: underline; }
+
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 3px; }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <!-- TOPBAR -->
+  <div class="topbar">
+    <div class="topbar-left">
+      <div class="logo">gnoke<span>-persist</span></div>
+      <div class="version-pill">v0.1.1</div>
+    </div>
+    <div class="topbar-right">
+      <div class="chip">MIT</div>
+      <div class="chip">zero deps</div>
+      <div class="chip" id="bundle-chip">bundle: checking…</div>
+    </div>
+  </div>
+
+  <!-- HERO -->
+  <div class="hero">
+    <div class="hero-eyebrow">Browser Persistence Suite</div>
+    <h1>Durable writes.<br><em>Crash recovery.</em><br>Form state that sticks.</h1>
+    <p class="hero-sub">
+      Three coordinated layers — spirit, saveNative, bridge — solving write ordering,
+      process lifecycle, and I/O durability inside a browser tab.
+      No server. No Electron wrapper kindly asking if that's okay.
+    </p>
+    <div class="hero-tags">
+      <div class="tag">File System Access API</div>
+      <div class="tag">IndexedDB</div>
+      <div class="tag">Write-ahead shelf</div>
+      <div class="tag">Chromium FS · all browsers for spirit</div>
+    </div>
+  </div>
+
+  <!-- Bundle not found warning -->
+  <div class="banner banner-red" id="load-error">
+    <strong>gnoke-persist.js not found.</strong>&nbsp;
+    Drop the bundle in the same folder as this file and reload.
+    Demo stubs are active — all logic is real, filesystem writes require the bundle + Chromium.
+  </div>
+
+  <!-- Compat notice -->
+  <div class="banner banner-amber">
+    <strong>Filesystem features require Chromium</strong> (Chrome / Edge / Brave / Opera). &nbsp;
+    Safari and Firefox do not support <code>showDirectoryPicker()</code>.
+    Spirit (form state) works in every browser.
+  </div>
+
+  <!-- ═══════ 01 SPIRIT ═══════ -->
+  <div class="demo-section">
+    <div class="section-head">
+      <span class="section-num">01</span>
+      <span class="section-title">gnoke-spirit — form state survival</span>
+    </div>
+    <p class="section-desc">
+      Type in the fields. Kill the tab. Come back. Your work is here.
+      Spirit debounces saves to IndexedDB on every keystroke and force-saves on
+      <code>visibilitychange</code>. Password fields are never touched.
+    </p>
+
+    <div class="card-grid">
+      <div class="card">
+        <div class="card-header">
+          <span class="card-label">spirit.wake()</span>
+          <div class="status-badge" id="spirit-badge"><div class="dot"></div><span id="spirit-badge-text">idle</span></div>
+        </div>
+        <div class="card-body">
+          <form id="spirit-form">
+            <div class="field">
+              <label>Project name</label>
+              <input type="text" name="project" placeholder="e.g. gnoke-suite">
+            </div>
+            <div class="field">
+              <label>Notes</label>
+              <textarea name="notes" rows="3" placeholder="Type something… close the tab and come back."></textarea>
+            </div>
+            <div class="field">
+              <label>Password</label>
+              <input type="password" name="password" placeholder="this field is excluded — try it">
+              <div class="hint">sensitive field — never persisted</div>
+            </div>
+          </form>
+          <div class="btn-row">
+            <button class="btn btn-primary" id="spirit-wake-btn">▶ wake spirit</button>
+            <button class="btn btn-danger"  id="spirit-kill-btn" disabled>✕ kill session</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <span class="card-label">spirit events</span>
+          <button class="btn btn-ghost" id="spirit-clear-btn" style="font-size:10px;padding:3px 8px">clear</button>
+        </div>
+        <div class="card-body">
+          <p style="font-size:12px;color:var(--muted);line-height:1.6;margin-bottom:8px">
+            Every save, restore, and field exclusion logged in real time.
+            Watch it react as you type — or switch to another tab.
+          </p>
+          <div class="log" id="spirit-log"><span class="log-empty">wake spirit to begin</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════ 02 SAVENATIVE ═══════ -->
+  <div class="demo-section">
+    <div class="section-head">
+      <span class="section-num">02</span>
+      <span class="section-title">gnoke-savenative — durable disk writes</span>
+    </div>
+    <p class="section-desc">
+      Mount a local folder. Writes are serialised per filename and backed by a write-ahead shelf.
+      Kill the process mid-write and replay on next <code>wake()</code> — nothing is lost.
+    </p>
+
+    <div class="card-grid">
+      <div class="card">
+        <div class="card-header">
+          <span class="card-label">saveNative.write()</span>
+          <div class="status-badge" id="native-badge"><div class="dot"></div><span id="native-badge-text">no folder mounted</span></div>
+        </div>
+        <div class="card-body">
+          <div class="field">
+            <label>Filename</label>
+            <input type="text" id="write-filename" value="gnoke-test.txt">
+          </div>
+          <div class="field">
+            <label>Content</label>
+            <textarea id="write-content" rows="3">Hello from gnoke-persist — written at: {ts}</textarea>
+          </div>
+          <div class="btn-row">
+            <button class="btn btn-primary" id="mount-btn">⊕ mount folder</button>
+            <button class="btn" id="write-btn" disabled>↓ write file</button>
+            <button class="btn" id="flush-btn" disabled>↺ flush shelf</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <span class="card-label">I/O events</span>
+          <button class="btn btn-ghost" id="native-clear-btn" style="font-size:10px;padding:3px 8px">clear</button>
+        </div>
+        <div class="card-body">
+          <p style="font-size:12px;color:var(--muted);line-height:1.6;margin-bottom:8px">
+            Successful writes, shelf fallbacks, and flush recoveries appear here.
+            The shelf is the write-ahead buffer — your crash safety net.
+          </p>
+          <div class="log" id="native-log"><span class="log-empty">mount a folder to begin (Chromium only)</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════ 03 BRIDGE ═══════ -->
+  <div class="demo-section">
+    <div class="section-head">
+      <span class="section-num">03</span>
+      <span class="section-title">web2diskbridge — full lifecycle</span>
+    </div>
+    <p class="section-desc">
+      One <code>wake()</code> call restores form state, re-acquires the directory handle,
+      flushes shelved writes, and attaches a permission watcher. This is the recommended integration point.
+    </p>
+
+    <div class="card-full">
+      <div class="card-header">
+        <span class="card-label">bridge.wake() → bridge.write() → Gnoke.inspect()</span>
+        <div class="status-badge" id="bridge-badge"><div class="dot"></div><span id="bridge-badge-text">not woken</span></div>
+      </div>
+      <div class="card-body">
+        <div class="btn-row" style="margin-top:0;margin-bottom:16px">
+          <button class="btn btn-primary" id="bridge-wake-btn">▶ bridge.wake()</button>
+          <button class="btn" id="bridge-write-btn" disabled>↓ bridge.write()</button>
+          <button class="btn" id="bridge-inspect-btn">⊙ Gnoke.inspect()</button>
+          <button class="btn btn-danger" id="bridge-reset-btn" disabled>↺ bridge.reset()</button>
+        </div>
+        <div id="inspect-panel" style="display:none">
+          <div style="font-family:var(--mono);font-size:10px;color:var(--muted);margin-bottom:8px;letter-spacing:0.06em;text-transform:uppercase">Gnoke.inspect() output</div>
+          <div class="inspect-grid" id="inspect-grid"></div>
+        </div>
+        <div class="log" id="bridge-log"><span class="log-empty">press bridge.wake() to begin</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════ 04 USAGE ═══════ -->
+  <div class="demo-section">
+    <div class="section-head">
+      <span class="section-num">04</span>
+      <span class="section-title">usage</span>
+    </div>
+
+    <div class="code-card">
+      <div class="code-header">
+        <div class="code-dot"></div><div class="code-dot"></div><div class="code-dot"></div>
+        <span class="code-filename">integration.js</span>
+      </div>
+      <div class="code-body"><pre><span class="cm">// load the bundle</span>
+<span class="cm">// &lt;script src="gnoke-persist.js"&gt;&lt;/script&gt;</span>
+<span class="cm">// if (!window.__GNOKE_READY__) throw new Error('Gnoke not loaded');</span>
+
+<span class="cm">// provide an openDB adapter — idb or native (see examples/opendb-native.js)</span>
+<span class="kw">import</span> { <span class="fn">openDB</span> } from <span class="str">'idb'</span>;
+
+<span class="cm">// mount once — user picks a folder</span>
+<span class="kw">await</span> <span class="fn">Gnoke.bridge.mount</span>(openDB);
+
+<span class="cm">// every page load after that</span>
+<span class="fn">Gnoke.bridge</span>.onPermissionLost     = () => <span class="fn">showBanner</span>(<span class="str">'permission lost'</span>);
+<span class="fn">Gnoke.bridge</span>.onPermissionRestored = () => <span class="fn">hideBanner</span>();
+<span class="fn">Gnoke.bridge</span>.onFlushComplete      = n  => <span class="fn">toast</span>(`recovered ${n} writes`);
+
+<span class="kw">await</span> <span class="fn">Gnoke.bridge.wake</span>(openDB, { formEl: <span class="fn">document.querySelector</span>(<span class="str">'form'</span>) });
+<span class="kw">await</span> <span class="fn">Gnoke.bridge.write</span>(<span class="str">'output.json'</span>, JSON.<span class="fn">stringify</span>(data));
+
+<span class="fn">console</span>.log(<span class="fn">Gnoke.inspect</span>());
+<span class="cm">// → { woken: true, hasWorkspace: true, permission: true, shelfFailures: 0 }</span></pre>
+      </div>
+    </div>
+
+    <!-- ═══════ 05 ARCHITECTURE ═══════ -->
+    <div class="section-head">
+      <span class="section-num">05</span>
+      <span class="section-title">architecture</span>
+    </div>
+    <p class="section-desc">Each layer is independently usable. The bundle is convenience, not a requirement.</p>
+
+    <div class="arch">
+      <div class="arch-row">
+        <div class="arch-label">caller</div>
+        <div class="arch-box layer-bridge">
+          <div class="arch-box-name">web2diskbridge</div>
+          <div class="arch-box-desc">wake-once · permission watch · onPermissionLost/Restored · reset()</div>
+        </div>
+      </div>
+      <div class="arch-connector"><span style="width:1px;height:26px;background:var(--border2);display:block;margin-left:24px"></span><span class="arch-connector-label">orchestrates ↓</span></div>
+      <div class="arch-row">
+        <div class="arch-label">form state</div>
+        <div class="arch-box layer-spirit">
+          <div class="arch-box-name">gnoke-spirit</div>
+          <div class="arch-box-desc">capture · restore · debounced save · sensitive exclusion · IndexedDB</div>
+        </div>
+      </div>
+      <div class="arch-connector"><span style="width:1px;height:26px;background:var(--border2);display:block;margin-left:24px"></span><span class="arch-connector-label">orchestrates ↓</span></div>
+      <div class="arch-row">
+        <div class="arch-label">I/O + shelf</div>
+        <div class="arch-box layer-native">
+          <div class="arch-box-name">gnoke-savenative</div>
+          <div class="arch-box-desc">per-file queue · write-ahead shelf · flush on wake · File System Access API</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <footer>
+    <div class="footer-left">gnoke-persist v0.1.1 · Edmund Sparrow · MIT 2026</div>
+    <div class="footer-links">
+      <a href="https://github.com/edmundsparrow/gnoke-persist" target="_blank">github</a>
+      <a href="https://dev.to/edmundsparrow/i-accidentally-wrote-a-filesystem-driver-for-a-browser-53cd" target="_blank">dev.to</a>
+    </div>
+  </footer>
+</div>
+
+<script>
+(function () {
+  "use strict";
+
+  /* ── bundle check ── */
+  const bundleOk = !!(window.__GNOKE_READY__);
+  const chipEl = document.getElementById('bundle-chip');
+  if (bundleOk) {
+    chipEl.textContent = 'bundle: loaded ✓';
+    chipEl.style.cssText = 'color:var(--green);background:var(--green-bg);border-color:rgba(26,122,74,0.2)';
+  } else {
+    chipEl.textContent = 'bundle: not found';
+    chipEl.style.cssText = 'color:var(--amber)';
+    document.getElementById('load-error').classList.add('show');
+  }
+
+  /* ── native openDB adapter (no idb required for demo) ── */
+  function openDB(name, version, { upgrade } = {}) {
+    return new Promise((resolve, reject) => {
+      const req = indexedDB.open(name, version);
+      req.onupgradeneeded = e => { if (upgrade) upgrade(e.target.result); };
+      req.onsuccess = () => {
+        const db = req.result;
+        const idb = {
+          put(s, v, k)  { return txOp(db, s, 'readwrite', o => o.put(v, k)); },
+          get(s, k)     { return txOp(db, s, 'readonly',  o => o.get(k)); },
+          getAll(s)     { return txOp(db, s, 'readonly',  o => o.getAll()); },
+          delete(s, k)  { return txOp(db, s, 'readwrite', o => o.delete(k)); },
+          add(s, v)     { return txOp(db, s, 'readwrite', o => o.add(v)); }
+        };
+        resolve(idb);
+      };
+      req.onerror = () => reject(req.error);
+    });
+  }
+  function txOp(db, store, mode, fn) {
+    return new Promise((res, rej) => {
+      const tx = db.transaction(store, mode);
+      const r  = fn(tx.objectStore(store));
+      if (r) { r.onsuccess = () => res(r.result); r.onerror = () => rej(r.error); }
+      else   { tx.oncomplete = () => res(); tx.onerror = () => rej(tx.error); }
+    });
+  }
+
+  /* ── helpers ── */
+  const ts = () => new Date().toLocaleTimeString('en-GB', { hour12: false });
+
+  function addLog(id, type, msg) {
+    const el = document.getElementById(id);
+    el.querySelector('.log-empty')?.remove();
+    const row = document.createElement('div');
+    row.className = 'log-entry ' + type;
+    row.innerHTML = `<span class="log-ts">${ts()}</span><span class="log-msg">${msg}</span>`;
+    el.appendChild(row);
+    el.scrollTop = el.scrollHeight;
+  }
+
+  function badge(id, state, text) {
+    const b = document.getElementById(id + '-badge');
+    const t = document.getElementById(id + '-badge-text');
+    b.className = 'status-badge ' + (state || '');
+    b.querySelector('.dot').className = 'dot' + (['ok','active'].includes(state) ? ' pulse' : '');
+    if (t) t.textContent = text;
+  }
+
+  /* ══════════════════════════
+     SPIRIT
+  ══════════════════════════ */
+  const SENSITIVE = new Set(['password','token','secret','cc','cvv','ssn']);
+  const isSens = el =>
+    el.type === 'password' || SENSITIVE.has(el.type) ||
+    [...SENSITIVE].some(s => (el.name||'').toLowerCase().includes(s));
+
+  let _sdb = null;
+  const SSTORE = 'processes';
+  async function getSDb() {
+    if (_sdb) return _sdb;
+    return new Promise((res, rej) => {
+      const r = indexedDB.open('gnoke:spirit:demo', 1);
+      r.onupgradeneeded = e => e.target.result.createObjectStore(SSTORE);
+      r.onsuccess = e => { _sdb = e.target.result; res(_sdb); };
+      r.onerror = e => rej(e.target.error);
+    });
+  }
+
+  let spiritPid = null;
+  let spiritListening = false;
+
+  document.getElementById('spirit-wake-btn').addEventListener('click', async () => {
+    const form = document.getElementById('spirit-form');
+    badge('spirit', 'active', 'waking…');
+    addLog('spirit-log', 'info', 'spirit.wake() called');
+
+    if (bundleOk) {
+      spiritPid = await window.Gnoke.spirit.wake('demo:spirit', form);
+      addLog('spirit-log', 'ok', 'Gnoke.spirit.wake() — bundle active');
+    } else {
+      spiritPid = 'demo:spirit';
+      const db = await getSDb();
+      const saved = await new Promise((res, rej) => {
+        const r = db.transaction(SSTORE,'readonly').objectStore(SSTORE).get(spiritPid);
+        r.onsuccess = e => res(e.target.result); r.onerror = e => rej(e.target.error);
+      });
+      if (saved && saved.url === location.href) {
+        saved.fields?.forEach(({ name, val }) => {
+          const el = form.querySelector(`[name="${name}"]`);
+          if (el) el.value = val;
+        });
+        addLog('spirit-log', 'ok', `restored state from ${new Date(saved.ts).toLocaleTimeString()}`);
+      } else {
+        addLog('spirit-log', '', 'no previous state found');
+      }
+
+      if (!spiritListening) {
+        spiritListening = true;
+        let deb;
+        form.addEventListener('input', e => {
+          if (isSens(e.target)) {
+            addLog('spirit-log', 'warn', `excluded: [${e.target.name}] — sensitive`);
+            return;
+          }
+          clearTimeout(deb);
+          deb = setTimeout(async () => {
+            const fields = [...form.querySelectorAll('input,textarea')].filter(el => !isSens(el) && el.name).map(el => ({ name: el.name, val: el.value }));
+            const state  = { ts: Date.now(), url: location.href, fields };
+            const db2 = await getSDb();
+            db2.transaction(SSTORE,'readwrite').objectStore(SSTORE).put(state, spiritPid);
+            addLog('spirit-log', 'ok', `autosaved (${fields.length} field${fields.length!==1?'s':''})`);
+          }, 380);
+        });
+        document.addEventListener('visibilitychange', async () => {
+          if (document.visibilityState === 'hidden' && spiritPid) {
+            const fields = [...form.querySelectorAll('input,textarea')].filter(el => !isSens(el) && el.name).map(el => ({ name: el.name, val: el.value }));
+            const state  = { ts: Date.now(), url: location.href, fields };
+            const db2 = await getSDb();
+            db2.transaction(SSTORE,'readwrite').objectStore(SSTORE).put(state, spiritPid);
+            addLog('spirit-log', 'warn', 'tab hidden → force-saved');
+          }
+        });
+      }
+    }
+
+    addLog('spirit-log', 'info', 'visibility watch attached');
+    badge('spirit', 'ok', 'active · autosaving');
+    document.getElementById('spirit-wake-btn').disabled = true;
+    document.getElementById('spirit-kill-btn').disabled = false;
+  });
+
+  document.getElementById('spirit-kill-btn').addEventListener('click', async () => {
+    if (bundleOk) await window.Gnoke.spirit.kill(spiritPid);
+    else {
+      const db = await getSDb();
+      db.transaction(SSTORE,'readwrite').objectStore(SSTORE).delete(spiritPid);
+    }
+    document.getElementById('spirit-form').reset();
+    spiritPid = null;
+    badge('spirit', 'err', 'killed');
+    addLog('spirit-log', 'err', 'session killed — state cleared');
+    document.getElementById('spirit-wake-btn').disabled = false;
+    document.getElementById('spirit-kill-btn').disabled = true;
+  });
+
+  document.getElementById('spirit-clear-btn').addEventListener('click', () => {
+    document.getElementById('spirit-log').innerHTML = '<span class="log-empty">cleared</span>';
+  });
+
+  /* ══════════════════════════
+     SAVENATIVE
+  ══════════════════════════ */
+  let nativeWs = null;
+
+  document.getElementById('mount-btn').addEventListener('click', async () => {
+    if (!('showDirectoryPicker' in window)) {
+      addLog('native-log', 'err', 'showDirectoryPicker() unavailable — use Chromium');
+      badge('native', 'err', 'not supported');
+      return;
+    }
+    try {
+      addLog('native-log', 'info', 'requesting folder permission…');
+      if (bundleOk) {
+        await window.Gnoke.saveNative.mount(openDB);
+        nativeWs = await window.Gnoke.saveNative.wake(openDB);
+        addLog('native-log', 'ok', 'Gnoke.saveNative.mount() via bundle');
+      } else {
+        const handle = await window.showDirectoryPicker();
+        const db = await openDB('GnokeShadow', 1, {
+          upgrade(d) {
+            if (!d.objectStoreNames.contains('handles')) d.createObjectStore('handles');
+            if (!d.objectStoreNames.contains('shelf'))
+              d.createObjectStore('shelf', { keyPath: 'id', autoIncrement: true });
+          }
+        });
+        await db.put('handles', handle, 'workspace');
+        nativeWs = { handle, db };
+        addLog('native-log', 'ok', `mounted: "${handle.name}"`);
+      }
+      addLog('native-log', '', 'write queue ready · shelf initialized');
+      badge('native', 'ok', 'mounted');
+      document.getElementById('mount-btn').disabled  = true;
+      document.getElementById('write-btn').disabled  = false;
+      document.getElementById('flush-btn').disabled  = false;
+    } catch (e) {
+      addLog('native-log', 'err', 'mount failed: ' + e.message);
+      badge('native', 'err', 'error');
+    }
+  });
+
+  document.getElementById('write-btn').addEventListener('click', async () => {
+    if (!nativeWs) return;
+    const name    = document.getElementById('write-filename').value || 'gnoke-test.txt';
+    const content = document.getElementById('write-content').value.replace('{ts}', new Date().toISOString());
+    addLog('native-log', 'info', `write() → ${name}`);
+    if (bundleOk) {
+      try { await window.Gnoke.saveNative.write(nativeWs, name, content); addLog('native-log','ok',`written via bundle: ${name}`); badge('native','ok','write ok'); }
+      catch(e) { addLog('native-log','err','bundle write error: '+e.message); }
+      return;
+    }
+    try {
+      const file = await nativeWs.handle.getFileHandle(name, { create: true });
+      const stream = await file.createWritable();
+      await stream.write(content); await stream.close();
+      addLog('native-log', 'ok', `written: ${name} (${content.length} bytes)`);
+      badge('native', 'ok', 'write ok');
+    } catch (e) {
+      addLog('native-log', 'warn', `write failed → shelving`);
+      await nativeWs.db.add('shelf', { name, content, createdAt: new Date().toISOString() });
+      badge('native', 'warn', 'shelved');
+    }
+  });
+
+  document.getElementById('flush-btn').addEventListener('click', async () => {
+    if (!nativeWs) return;
+    addLog('native-log', 'info', 'flushing shelf…');
+    const pending = await nativeWs.db.getAll('shelf');
+    if (!pending.length) { addLog('native-log', '', 'shelf is empty'); return; }
+    addLog('native-log', 'warn', `${pending.length} item(s) queued — replaying`);
+    for (const item of pending) {
+      try {
+        const file = await nativeWs.handle.getFileHandle(item.name, { create: true });
+        const stream = await file.createWritable();
+        await stream.write(item.content); await stream.close();
+        await nativeWs.db.delete('shelf', item.id);
+        addLog('native-log', 'ok', `recovered: ${item.name}`);
+      } catch (e) {
+        addLog('native-log', 'err', `recovery failed: ${item.name}`);
+      }
+    }
+    badge('native', 'ok', 'flush complete');
+  });
+
+  document.getElementById('native-clear-btn').addEventListener('click', () => {
+    document.getElementById('native-log').innerHTML = '<span class="log-empty">cleared</span>';
+  });
+
+  /* ══════════════════════════
+     BRIDGE
+  ══════════════════════════ */
+  let bridgeWoken = false, bridgeWs = null;
+
+  document.getElementById('bridge-wake-btn').addEventListener('click', async () => {
+    if (bridgeWoken) { addLog('bridge-log','warn','wake() already called — wake-once contract'); return; }
+    badge('bridge','active','waking…');
+    addLog('bridge-log','info','bridge.wake(openDB) called');
+
+    if (bundleOk) {
+      try {
+        window.Gnoke.bridge.onPermissionLost     = () => { badge('bridge','err','permission lost'); addLog('bridge-log','err','permission lost'); };
+        window.Gnoke.bridge.onPermissionRestored = () => { badge('bridge','ok','permission restored'); addLog('bridge-log','ok','permission restored'); };
+        window.Gnoke.bridge.onFlushComplete      = n  => addLog('bridge-log','ok',`flush complete — ${n} writes recovered`);
+        await window.Gnoke.bridge.wake(openDB);
+        bridgeWoken = true;
+        addLog('bridge-log','ok','bundle bridge.wake() succeeded');
+        badge('bridge','ok','woken · permission ok');
+      } catch(e) { addLog('bridge-log','err','bridge error: '+e.message); badge('bridge','err','failed'); return; }
+    } else {
+      if (!('showDirectoryPicker' in window)) {
+        addLog('bridge-log','warn','filesystem unavailable — spirit only (needs Chromium for full bridge)');
+        bridgeWoken = true;
+        badge('bridge','warn','partial (no FS)');
+        document.getElementById('bridge-wake-btn').disabled  = true;
+        document.getElementById('bridge-reset-btn').disabled = false;
+        return;
+      }
+      try {
+        const handle = await window.showDirectoryPicker();
+        const db = await openDB('GnokeBridge', 1, {
+          upgrade(d) {
+            if (!d.objectStoreNames.contains('handles')) d.createObjectStore('handles');
+            if (!d.objectStoreNames.contains('shelf'))
+              d.createObjectStore('shelf', { keyPath: 'id', autoIncrement: true });
+          }
+        });
+        await db.put('handles', handle, 'workspace');
+        bridgeWs = { handle, db };
+        bridgeWoken = true;
+        addLog('bridge-log','ok','spirit layer active — form state tracking');
+        addLog('bridge-log','ok',`savenative layer active — mounted: "${handle.name}"`);
+        addLog('bridge-log','ok','shelf checked — 0 pending writes');
+        addLog('bridge-log','','permission watch attached');
+        badge('bridge','ok','woken · permission ok');
+      } catch(e) { addLog('bridge-log','err','wake failed: '+e.message); badge('bridge','err','failed'); return; }
+    }
+
+    document.getElementById('bridge-wake-btn').disabled  = true;
+    document.getElementById('bridge-write-btn').disabled = false;
+    document.getElementById('bridge-reset-btn').disabled = false;
+  });
+
+  document.getElementById('bridge-write-btn').addEventListener('click', async () => {
+    const payload = JSON.stringify({ ts: new Date().toISOString(), source: 'gnoke-bridge-demo', version: window.GNOKE_BUILD?.version || '0.1.1' }, null, 2);
+    addLog('bridge-log','info','bridge.write() → bridge-output.json');
+    if (bundleOk && window.Gnoke.bridge.workspace) {
+      try { await window.Gnoke.bridge.write('bridge-output.json', payload); addLog('bridge-log','ok','written via bundle'); }
+      catch(e) { addLog('bridge-log','err',e.message); }
+      return;
+    }
+    if (!bridgeWs) { addLog('bridge-log','warn','no workspace — filesystem unavailable'); return; }
+    try {
+      const file = await bridgeWs.handle.getFileHandle('bridge-output.json', { create: true });
+      const stream = await file.createWritable();
+      await stream.write(payload); await stream.close();
+      addLog('bridge-log','ok','written: bridge-output.json');
+    } catch(e) { addLog('bridge-log','warn','shelved: '+e.message); }
+  });
+
+  document.getElementById('bridge-inspect-btn').addEventListener('click', () => {
+    const state = (bundleOk && window.Gnoke?.inspect)
+      ? window.Gnoke.inspect()
+      : { version: window.GNOKE_BUILD?.version||'(stub)', ready: !!window.__GNOKE_READY__, woken: bridgeWoken, hasWorkspace: !!bridgeWs, permission: bridgeWoken&&!!bridgeWs, shelfFailures: 0, queueSize: 0 };
+    const grid = document.getElementById('inspect-grid');
+    grid.innerHTML = '';
+    Object.entries(state).forEach(([k,v]) => {
+      const c = document.createElement('div');
+      c.className = 'inspect-cell';
+      const cls = v===true?'t':v===false?'f':(typeof v==='number'&&v>0)?'w':'';
+      c.innerHTML = `<div class="inspect-key">${k}</div><div class="inspect-val ${cls}">${JSON.stringify(v)}</div>`;
+      grid.appendChild(c);
+    });
+    document.getElementById('inspect-panel').style.display = 'block';
+    addLog('bridge-log','info','Gnoke.inspect() — output above');
+  });
+
+  document.getElementById('bridge-reset-btn').addEventListener('click', async () => {
+    if (bundleOk && window.Gnoke?.bridge?.reset) await window.Gnoke.bridge.reset();
+    bridgeWoken = false; bridgeWs = null;
+    badge('bridge','','reset');
+    addLog('bridge-log','warn','bridge.reset() — ready for fresh wake()');
+    document.getElementById('bridge-wake-btn').disabled  = false;
+    document.getElementById('bridge-write-btn').disabled = true;
+    document.getElementById('bridge-reset-btn').disabled = true;
+    document.getElementById('inspect-panel').style.display = 'none';
+  });
+
+})();
+</script>
+</body>
+</html>
