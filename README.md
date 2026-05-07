@@ -1,4 +1,4 @@
-# gnoke-persist
+# Gnoke-Persist
 
 Durable browser persistence — write-ahead shelf, form state survival, and I/O orchestration for the File System Access API.
 
