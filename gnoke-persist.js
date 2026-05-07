@@ -62,8 +62,8 @@ SENSITIVE.has(f.type) ||
 [...SENSITIVE].some(s => (f.name || f.id || '').toLowerCase().includes(s));
 
 const sel = el =>
-el.id ? #${el.id} : el.name ? [name="${el.name}"] : el.tagName.toLowerCase();
 
+  el.id ? `#${el.id}` : el.name ? `[name="${el.name}"]` : el.tagName.toLowerCase();  
 const capture = (root) => {
 const r = root || document;
 return {
